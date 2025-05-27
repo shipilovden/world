@@ -66,12 +66,25 @@ const store = {
     rayleigh: 1,
     mieCoefficient: 0.005,
     mieDirectionalG: 0.8,
-    elevation: 2,
+    elevation: 33,
     azimuth: 180,
     exposure: 0.5,
+
+    // fog
+    fogEnabled: true,
+    fogMode: "linear", // linear | exp | exp2
+    fogDensity: 0.005,
     fogNear: 30,
     fogFar: 100,
     fogColor: "#f0f0f0",
+
+    // background
+    backgroundColor: "#000000",
+
+    // environment map
+    environmentMap: null,
+    environmentUrl: "",
+
     __needsUpdate: false,
   },
 
@@ -80,12 +93,21 @@ const store = {
     this.sky.rayleigh = 1;
     this.sky.mieCoefficient = 0.005;
     this.sky.mieDirectionalG = 0.8;
-    this.sky.elevation = 2;
+    this.sky.elevation = 33;
     this.sky.azimuth = 180;
     this.sky.exposure = 0.5;
+
+    this.sky.fogEnabled = true;
+    this.sky.fogMode = "linear";
+    this.sky.fogDensity = 0.005;
     this.sky.fogNear = 30;
     this.sky.fogFar = 100;
     this.sky.fogColor = "#f0f0f0";
+
+    this.sky.backgroundColor = "#000000";
+    this.sky.environmentMap = null;
+    this.sky.environmentUrl = "";
+
     this.sky.__needsUpdate = true;
   },
 };

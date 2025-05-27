@@ -1,3 +1,4 @@
+// Scene.jsx
 import React, { useEffect, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import { OrbitControls, Sky } from "@react-three/drei";
@@ -67,7 +68,7 @@ function Ground() {
 }
 
 // ====== ОСНОВНАЯ СЦЕНА ======
-export default function Scene() {
+export default function Scene({ joystickDir }) {
   const { camera, scene, gl } = useThree();
 
   const smallGrid = useRef();
@@ -76,7 +77,6 @@ export default function Scene() {
   const skyRef = useRef();
   const sunLightRef = useRef();
 
-  // Включаем тени в рендерере
   useEffect(() => {
     gl.shadowMap.enabled = true;
     gl.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -90,9 +90,28 @@ export default function Scene() {
     const interval = setInterval(() => {
       const sky = store.sky;
 
-      scene.fog = new THREE.Fog(sky.fogColor, sky.fogNear, sky.fogFar);
+      // 🌫️ Fog
+      if (sky.fogEnabled) {
+        scene.fog =
+          sky.fogMode === "exp" || sky.fogMode === "exp2"
+            ? new THREE.FogExp2(sky.fogColor, sky.fogDensity)
+            : new THREE.Fog(sky.fogColor, sky.fogNear, sky.fogFar);
+      } else {
+        scene.fog = null;
+      }
+
+      // 🎨 Background
+      scene.background = new THREE.Color(sky.backgroundColor ?? "#000000");
+
+      // 💡 Environment map
+      if (sky.environmentMap) {
+        scene.environment = sky.environmentMap;
+      }
+
+      // 🔆 Exposure
       gl.toneMappingExposure = sky.exposure ?? 0.5;
 
+      // ☀️ Sun position
       const theta = THREE.MathUtils.degToRad(90 - sky.elevation);
       const phi = THREE.MathUtils.degToRad(sky.azimuth);
       const sun = new THREE.Vector3(
@@ -101,7 +120,7 @@ export default function Scene() {
         Math.cos(phi) * Math.cos(theta)
       );
 
-      if (skyRef.current) {
+      if (skyRef.current?.material?.uniforms) {
         skyRef.current.material.uniforms["turbidity"].value = sky.turbidity;
         skyRef.current.material.uniforms["rayleigh"].value = sky.rayleigh;
         skyRef.current.material.uniforms["mieCoefficient"].value = sky.mieCoefficient;
@@ -176,7 +195,7 @@ export default function Scene() {
         <gridHelper ref={smallGrid} args={[1000, 1000]} position={[0, 0.01, 0]} />
         <gridHelper ref={mediumGrid} args={[1000, 100]} position={[0, 0.02, 0]} />
         <gridHelper ref={largeGrid} args={[1000, 50]} position={[0, 0.03, 0]} />
-        <Avatar castShadow /> {/* Объект должен отбрасывать тень */}
+        <Avatar castShadow joystickDir={joystickDir} /> {/* 👈 Управление с джойстика */}
       </Physics>
     </>
   );
