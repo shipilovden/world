@@ -30,70 +30,27 @@ function Ground() {
       mat.displacementScale = g.displacementScale ?? 0.1;
       mat.transparent = g.opacity < 1;
 
-      // flipX и flipY для отражения текстуры
       const flipX = g.flipX ? -1 : 1;
       const flipY = g.flipY ? -1 : 1;
 
-      // Base map
-      if (g.texture) {
-        g.texture.wrapS = g.texture.wrapT = THREE.RepeatWrapping;
-        g.texture.repeat.set(g.textureScaleX * flipX, g.textureScaleY * flipY);
-        g.texture.offset.set(g.uvOffsetX ?? 0, g.uvOffsetY ?? 0);
-        mat.map = g.texture;
-      } else {
-        mat.map = null;
-      }
+      const applyTexture = (mapKey, targetProp) => {
+        const tex = g[mapKey];
+        if (tex) {
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          tex.repeat.set(g.textureScaleX * flipX, g.textureScaleY * flipY);
+          tex.offset.set(g.uvOffsetX ?? 0, g.uvOffsetY ?? 0);
+          mat[targetProp] = tex;
+        } else {
+          mat[targetProp] = null;
+        }
+      };
 
-      // Normal map
-      if (g.normalMap) {
-        g.normalMap.wrapS = g.normalMap.wrapT = THREE.RepeatWrapping;
-        g.normalMap.repeat.set(g.textureScaleX * flipX, g.textureScaleY * flipY);
-        g.normalMap.offset.set(g.uvOffsetX ?? 0, g.uvOffsetY ?? 0);
-        mat.normalMap = g.normalMap;
-      } else {
-        mat.normalMap = null;
-      }
-
-      // Roughness map
-      if (g.roughnessMap) {
-        g.roughnessMap.wrapS = g.roughnessMap.wrapT = THREE.RepeatWrapping;
-        g.roughnessMap.repeat.set(g.textureScaleX * flipX, g.textureScaleY * flipY);
-        g.roughnessMap.offset.set(g.uvOffsetX ?? 0, g.uvOffsetY ?? 0);
-        mat.roughnessMap = g.roughnessMap;
-      } else {
-        mat.roughnessMap = null;
-      }
-
-      // AO map
-      if (g.aoMap) {
-        g.aoMap.wrapS = g.aoMap.wrapT = THREE.RepeatWrapping;
-        g.aoMap.repeat.set(g.textureScaleX * flipX, g.textureScaleY * flipY);
-        g.aoMap.offset.set(g.uvOffsetX ?? 0, g.uvOffsetY ?? 0);
-        mat.aoMap = g.aoMap;
-      } else {
-        mat.aoMap = null;
-      }
-
-      // Metalness map
-      if (g.metalnessMap) {
-        g.metalnessMap.wrapS = g.metalnessMap.wrapT = THREE.RepeatWrapping;
-        g.metalnessMap.repeat.set(g.textureScaleX * flipX, g.textureScaleY * flipY);
-        g.metalnessMap.offset.set(g.uvOffsetX ?? 0, g.uvOffsetY ?? 0);
-        mat.metalnessMap = g.metalnessMap;
-      } else {
-        mat.metalnessMap = null;
-      }
-
-      // Height map (displacement)
-      if (g.heightMap) {
-        g.heightMap.wrapS = g.heightMap.wrapT = THREE.RepeatWrapping;
-        g.heightMap.repeat.set(g.textureScaleX * flipX, g.textureScaleY * flipY);
-        g.heightMap.offset.set(g.uvOffsetX ?? 0, g.uvOffsetY ?? 0);
-        mat.displacementMap = g.heightMap;
-        mat.displacementScale = g.displacementScale ?? 0.1;
-      } else {
-        mat.displacementMap = null;
-      }
+      applyTexture("texture", "map");
+      applyTexture("normalMap", "normalMap");
+      applyTexture("roughnessMap", "roughnessMap");
+      applyTexture("aoMap", "aoMap");
+      applyTexture("metalnessMap", "metalnessMap");
+      applyTexture("heightMap", "displacementMap");
 
       mat.needsUpdate = true;
     }, 100);
@@ -111,50 +68,74 @@ function Ground() {
 
 // ====== ОСНОВНАЯ СЦЕНА ======
 export default function Scene() {
-  const { camera, scene } = useThree();
+  const { camera, scene, gl } = useThree();
 
   const smallGrid = useRef();
   const mediumGrid = useRef();
   const largeGrid = useRef();
+  const skyRef = useRef();
+  const sunLightRef = useRef();
+
+  // Включаем тени в рендерере
+  useEffect(() => {
+    gl.shadowMap.enabled = true;
+    gl.shadowMap.type = THREE.PCFSoftShadowMap;
+  }, [gl]);
 
   useEffect(() => {
     camera.position.set(0, 1.3, 6);
-    scene.fog = new THREE.Fog("#f0f0f0", 30, 100);
-  }, [camera, scene]);
+  }, [camera]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const sky = store.sky;
+
+      scene.fog = new THREE.Fog(sky.fogColor, sky.fogNear, sky.fogFar);
+      gl.toneMappingExposure = sky.exposure ?? 0.5;
+
+      const theta = THREE.MathUtils.degToRad(90 - sky.elevation);
+      const phi = THREE.MathUtils.degToRad(sky.azimuth);
+      const sun = new THREE.Vector3(
+        Math.sin(phi) * Math.cos(theta),
+        Math.sin(theta),
+        Math.cos(phi) * Math.cos(theta)
+      );
+
+      if (skyRef.current) {
+        skyRef.current.material.uniforms["turbidity"].value = sky.turbidity;
+        skyRef.current.material.uniforms["rayleigh"].value = sky.rayleigh;
+        skyRef.current.material.uniforms["mieCoefficient"].value = sky.mieCoefficient;
+        skyRef.current.material.uniforms["mieDirectionalG"].value = sky.mieDirectionalG;
+        skyRef.current.material.uniforms["sunPosition"].value.copy(sun);
+      }
+
+      if (sunLightRef.current) {
+        sunLightRef.current.position.copy(sun.clone().multiplyScalar(100));
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [scene, gl]);
 
   useEffect(() => {
     const update = () => {
       const g = store.grid;
 
-      if (smallGrid.current?.material) {
-        smallGrid.current.visible = g.showSmall;
-        smallGrid.current.material.opacity = g.opacitySmall;
-        smallGrid.current.material.color.set(g.colorSmall);
-        smallGrid.current.material.transparent = true;
-        smallGrid.current.material.depthWrite = false;
-        smallGrid.current.material.fog = true;
-        smallGrid.current.material.needsUpdate = true;
-      }
+      const updateGrid = (ref, visible, opacity, color) => {
+        if (ref.current?.material) {
+          ref.current.visible = visible;
+          ref.current.material.opacity = opacity;
+          ref.current.material.color.set(color);
+          ref.current.material.transparent = true;
+          ref.current.material.depthWrite = false;
+          ref.current.material.fog = true;
+          ref.current.material.needsUpdate = true;
+        }
+      };
 
-      if (mediumGrid.current?.material) {
-        mediumGrid.current.visible = g.showMedium;
-        mediumGrid.current.material.opacity = g.opacityMedium;
-        mediumGrid.current.material.color.set(g.colorMedium);
-        mediumGrid.current.material.transparent = true;
-        mediumGrid.current.material.depthWrite = false;
-        mediumGrid.current.material.fog = true;
-        mediumGrid.current.material.needsUpdate = true;
-      }
-
-      if (largeGrid.current?.material) {
-        largeGrid.current.visible = g.showLarge;
-        largeGrid.current.material.opacity = g.opacityLarge;
-        largeGrid.current.material.color.set(g.colorLarge);
-        largeGrid.current.material.transparent = true;
-        largeGrid.current.material.depthWrite = false;
-        largeGrid.current.material.fog = true;
-        largeGrid.current.material.needsUpdate = true;
-      }
+      updateGrid(smallGrid, g.showSmall, g.opacitySmall, g.colorSmall);
+      updateGrid(mediumGrid, g.showMedium, g.opacityMedium, g.colorMedium);
+      updateGrid(largeGrid, g.showLarge, g.opacityLarge, g.colorLarge);
     };
 
     const interval = setInterval(update, 100);
@@ -165,30 +146,21 @@ export default function Scene() {
     <>
       <ambientLight intensity={0.4} />
       <directionalLight
+        ref={sunLightRef}
         castShadow
-        position={[5, 10, 5]}
         intensity={4.0}
         shadow-mapSize-width={4096}
         shadow-mapSize-height={4096}
         shadow-camera-near={0.5}
-        shadow-camera-far={50}
-        shadow-camera-left={-10}
-        shadow-camera-right={10}
-        shadow-camera-top={10}
-        shadow-camera-bottom={-10}
+        shadow-camera-far={100}
+        shadow-camera-left={-20}
+        shadow-camera-right={20}
+        shadow-camera-top={20}
+        shadow-camera-bottom={-20}
         shadow-bias={-0.001}
-        shadow-radius={0.5}
+        shadow-radius={1}
       />
-      <Sky
-        distance={450}
-        sunPosition={[5, 10, 5]}
-        turbidity={2}
-        rayleigh={0.5}
-        mieCoefficient={0.005}
-        mieDirectionalG={0.8}
-        inclination={0.6}
-        azimuth={0.25}
-      />
+      <Sky ref={skyRef} />
       <OrbitControls
         enablePan={false}
         enableZoom={true}
@@ -204,7 +176,7 @@ export default function Scene() {
         <gridHelper ref={smallGrid} args={[1000, 1000]} position={[0, 0.01, 0]} />
         <gridHelper ref={mediumGrid} args={[1000, 100]} position={[0, 0.02, 0]} />
         <gridHelper ref={largeGrid} args={[1000, 50]} position={[0, 0.03, 0]} />
-        <Avatar />
+        <Avatar castShadow /> {/* Объект должен отбрасывать тень */}
       </Physics>
     </>
   );

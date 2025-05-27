@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from "@tweakpane/plugin-essentials";
+
 import GridSettings from "./GridSettings";
 import GroundSettings from "./GroundSettings";
+import SkySettings from "./SkySettings"; // 👈 добавлено
+
 import store from "./store";
 
 export default function SettingsPanel() {
@@ -24,6 +27,9 @@ export default function SettingsPanel() {
 
       const ground = settings.addFolder({ title: "🌍 Ground", expanded: false });
       GroundSettings(ground);
+
+      const sky = settings.addFolder({ title: "🌌 Пространство", expanded: false }); // 👈 добавлено
+      SkySettings(sky); // 👈 добавлено
 
       paneInstance.current = pane;
     }
@@ -69,12 +75,13 @@ export default function SettingsPanel() {
             top: 70,
             right: 20,
             zIndex: 1000,
-            maxHeight: "60vh", // Ограничиваем высоту панели (60% высоты экрана)
-            width: 300, // Фиксированная ширина для читаемости
-            overflowY: "auto", // Включаем прокрутку по вертикали
-            background: "#fff", // Белый фон для читаемости
+            width: 300,
+            maxHeight: "60vh",
+            overflowY: "auto",
+            background: "#fff",
             borderRadius: 5,
-            boxShadow: "0 0 5px rgba(0,0,0,0.3)", // Тень для красоты
+            boxShadow: "0 0 5px rgba(0,0,0,0.3)",
+            paddingRight: 4,
           }}
         />
       )}

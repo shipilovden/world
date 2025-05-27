@@ -60,6 +60,34 @@ const store = {
     this.ground.flipY = false;
     this.ground.__needsUpdate = true;
   },
+
+  sky: {
+    turbidity: 2,
+    rayleigh: 1,
+    mieCoefficient: 0.005,
+    mieDirectionalG: 0.8,
+    elevation: 2,
+    azimuth: 180,
+    exposure: 0.5,
+    fogNear: 30,
+    fogFar: 100,
+    fogColor: "#f0f0f0",
+    __needsUpdate: false,
+  },
+
+  resetSky() {
+    this.sky.turbidity = 2;
+    this.sky.rayleigh = 1;
+    this.sky.mieCoefficient = 0.005;
+    this.sky.mieDirectionalG = 0.8;
+    this.sky.elevation = 2;
+    this.sky.azimuth = 180;
+    this.sky.exposure = 0.5;
+    this.sky.fogNear = 30;
+    this.sky.fogFar = 100;
+    this.sky.fogColor = "#f0f0f0";
+    this.sky.__needsUpdate = true;
+  },
 };
 
 export default store;
