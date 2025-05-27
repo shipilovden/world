@@ -1,12 +1,84 @@
-# React + Vite
+# 🌍 DEN WORLD
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Расширяемый 3D-мир** на базе [React Three Fiber](https://docs.pmnd.rs/react-three-fiber), [Tweakpane](https://cocopon.github.io/tweakpane/) и [Three.js](https://threejs.org/).  
+Этот проект — чистая сцена с возможностью интерактивной настройки параметров в реальном времени.
 
-Currently, two official plugins are available:
+> 🔗 Актуальное демо:  
+> https://denworld.vercel.app/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 📸 Скриншоты
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Главная сцена  
+![Главная сцена](public/screenshots/denworld_1.png)
+
+### Интерфейс Tweakpane  
+![Интерфейс Tweakpane](public/screenshots/denworld_2.png)
+
+---
+
+## ⚙️ Установка и запуск (PowerShell / Windows)
+
+### 📦 Клонирование репозитория
+
+```powershell
+git clone https://github.com/shipilovden/world.git
+cd world
+📁 Установка зависимостей
+powershell
+Копировать
+Редактировать
+npm install
+или (если используешь Yarn):
+
+powershell
+Копировать
+Редактировать
+yarn install
+🚀 Запуск проекта
+powershell
+Копировать
+Редактировать
+npm run dev
+После запуска открой в браузере:
+
+arduino
+Копировать
+Редактировать
+http://localhost:5173
+🔧 Используемые технологии
+React Three Fiber — рендеринг 3D-сцены
+
+Three.js — базовый WebGL-рендеринг
+
+Tweakpane — UI для интерактивных настроек
+
+Cannon-es — физика
+
+Vite — современная сборка проекта
+
+🧠 Возможности
+Реалистичная 3D-сцена
+
+Панель настроек с параметрами:
+
+Цвет, прозрачность, металличность, нормали, высота
+
+Загрузка текстур: Base, Normal, Roughness, AO, Metalness, Height
+
+Масштаб и смещение текстур (UV)
+
+Flip X / Flip Y
+
+Кнопка Reset (внизу панели)
+
+Прокрутка панели, адаптированная под любой экран
+
+Стартовый экран с кнопкой Start
+
+🙏 Благодарности
+Проект основан на:
+
+📦 https://github.com/tamani-coding/threejs-character-controls-example
+Автор: @tamani-coding
