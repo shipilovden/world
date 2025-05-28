@@ -1,74 +1,73 @@
 # 🌍 WORLD
 
-**Расширяемый 3D-мир** на базе [React Three Fiber](https://docs.pmnd.rs/react-three-fiber), [Tweakpane](https://cocopon.github.io/tweakpane/) и [Three.js](https://threejs.org/).  
-Этот проект — чистая сцена с возможностью интерактивной настройки параметров в реальном времени.
+**Extensible 3D world** based on [React Three Fiber](https://docs.pmnd.rs/react-three-fiber), [Tweakpane](https://cocopon.github.io/tweakpane/), and [Three.js](https://threejs.org/).  
+This project is a clean scene with real-time interactive parameter tuning.
 
-> 🔗 **Обновления публикуются тут:**  
+> 🔗 **Updates are published here:**  
 >     https://denworld.vercel.app/
 
 ---
 
-## 📸 Скриншоты
+## 📸 Screenshots
 
-### Главная сцена  
-![Главная сцена](public/screenshots/denworld_1.png)
+### Main Scene  
+![Main Scene](public/screenshots/denworld_1.png)
 
-### Интерфейс Tweakpane  
-![Интерфейс Tweakpane](public/screenshots/denworld_2.png)
+### Tweakpane Interface  
+![Tweakpane Interface](public/screenshots/denworld_2.png)
 
 ---
 
-## ⚙️ Установка и запуск
+## ⚙️ Installation & Start
 
-### 1. Клонирование репозитория
+### 1. Clone the repository
 
 ```powershell
 git clone https://github.com/shipilovden/world.git
 cd world
 ```
 
-### 2. Установка зависимостей
+### 2. Install dependencies
 
 ```powershell
 npm install
 ```
-или, если используешь Yarn:
+or, if you use Yarn:
 ```powershell
 yarn install
 ```
 
-### 3. Запуск проекта
+### 3. Start the project
 
 ```powershell
 npm run dev
 ```
 
-После запуска открой в браузере:  
+After starting, open in your browser:  
 [http://localhost:5173](http://localhost:5173)
 
+## 🔧 Technologies Used
 
-## 🔧 Используемые технологии
-
-- **React Three Fiber** — рендеринг 3D-сцены
-- **Three.js** — базовый WebGL-рендеринг
-- **Tweakpane** — UI для интерактивных настроек
-- **Cannon-es** — физика
-- **Vite** — современная сборка проекта
-
----
-
-## 🧠 Возможности
-
-- Реалистичная 3D-сцена
-- Панель настроек с параметрами:
+- **React Three Fiber** — 3D scene rendering
+- **Three.js** — core WebGL rendering
+- **Tweakpane** — UI for interactive settings
+- **Cannon-es** — physics engine
+- **Vite** — modern project bundler
 
 ---
 
-## 🙏 Благодарности
+## 🧠 Features
 
-Проект основан на:
+- Realistic 3D scene
+- Settings panel with parameters
+
+---
+
+## 🙏 Credits
+
+This project is based on:
 
 - 📦 [threejs-character-controls-example](https://github.com/tamani-coding/threejs-character-controls-example)  
-  Автор: [@tamani-coding](https://github.com/tamani-coding)
+  Author: [@tamani-coding](https://github.com/tamani-coding)
 
 ---
