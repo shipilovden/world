@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import Scene from "./Scene";
 import SettingsPanel from "./settings/SettingsPanel";
-import MobileJoystick from "./Joystick"; // ✅
+import MobileJoystick from "./Joystick";
 
 export default function App() {
   const [isStarted, setIsStarted] = useState(false);
@@ -11,7 +11,7 @@ export default function App() {
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
   const handleJoystickMove = (event) => {
-    setJoystickDir(event.direction); // например: "FORWARD", "LEFT", "RIGHT", "BACKWARD"
+    setJoystickDir(event.direction); // "FORWARD", "LEFT", "RIGHT", "BACKWARD"
   };
 
   const handleJoystickStop = () => {
@@ -22,6 +22,14 @@ export default function App() {
     <>
       {!isStarted && (
         <div className="start-screen">
+          <div className="logo-container">
+            <img
+              src="/logo.png"
+              alt="World Logo"
+              className="logo-image"
+            />
+            <h1 className="version-label">World v1.0.0</h1>
+          </div>
           <button className="start-button" onClick={() => setIsStarted(true)}>
             Start
           </button>

@@ -28,7 +28,7 @@ export default function SettingsPanel() {
       const ground = settings.addFolder({ title: "🌍 Ground", expanded: false });
       GroundSettings(ground);
 
-      const sky = settings.addFolder({ title: "🌌 Пространство", expanded: false }); // 👈 добавлено
+      const sky = settings.addFolder({ title: "🌌 Environment", expanded: false }); // 👈 добавлено
       SkySettings(sky); // 👈 добавлено
 
       paneInstance.current = pane;

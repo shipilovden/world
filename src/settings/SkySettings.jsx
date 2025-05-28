@@ -56,6 +56,20 @@ export default function SkySettings(folder) {
     label: "Exposure",
   }).on("change", () => sky.__needsUpdate = true);
 
+  // === Прозрачность неба ===
+  folder.addBinding(sky, "skyAlpha", {
+    min: 0,
+    max: 1,
+    step: 0.01,
+    label: "Sky Alpha",
+  }).on("change", () => sky.__needsUpdate = true);
+
+  // === Цвет неба ===
+  folder.addBinding(sky, "skyColor", {
+    view: "color",
+    label: "Sky Color",
+  }).on("change", () => sky.__needsUpdate = true);
+
   // === Фон ===
   folder.addBinding(sky, "backgroundColor", {
     view: "color",

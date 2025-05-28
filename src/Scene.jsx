@@ -126,6 +126,18 @@ export default function Scene({ joystickDir }) {
         skyRef.current.material.uniforms["mieCoefficient"].value = sky.mieCoefficient;
         skyRef.current.material.uniforms["mieDirectionalG"].value = sky.mieDirectionalG;
         skyRef.current.material.uniforms["sunPosition"].value.copy(sun);
+
+        // === Цвет и прозрачность неба ===
+        const color = new THREE.Color(sky.skyColor);
+        if (skyRef.current.material.uniforms["background"]) {
+          skyRef.current.material.uniforms["background"].value = color;
+        }
+        if (skyRef.current.material) {
+          skyRef.current.material.color = color;
+          skyRef.current.material.transparent = sky.skyAlpha < 1;
+          skyRef.current.material.opacity = sky.skyAlpha;
+          skyRef.current.material.needsUpdate = true;
+        }
       }
 
       if (sunLightRef.current) {
@@ -179,7 +191,12 @@ export default function Scene({ joystickDir }) {
         shadow-bias={-0.001}
         shadow-radius={1}
       />
-      <Sky ref={skyRef} />
+      <Sky
+        ref={skyRef}
+        // ...другие пропсы...
+        // Эти два пропса не обязательны, но можно для наглядности:
+        // sunPosition={[...]} // если нужно
+      />
       <OrbitControls
         enablePan={false}
         enableZoom={true}
@@ -197,6 +214,16 @@ export default function Scene({ joystickDir }) {
         <gridHelper ref={largeGrid} args={[1000, 50]} position={[0, 0.03, 0]} />
         <Avatar castShadow joystickDir={joystickDir} /> {/* 👈 Управление с джойстика */}
       </Physics>
+      <mesh scale={[500, 500, 500]}>
+        <sphereGeometry args={[1, 32, 32]} />
+        <meshBasicMaterial
+          color={store.sky.skyColor}
+          transparent={store.sky.skyAlpha < 1}
+          opacity={store.sky.skyAlpha}
+          side={THREE.BackSide}
+          depthWrite={false}
+        />
+      </mesh>
     </>
   );
 }

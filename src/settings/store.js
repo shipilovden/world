@@ -85,6 +85,10 @@ const store = {
     environmentMap: null,
     environmentUrl: "",
 
+    // === Новые свойства ===
+    skyColor: "#87ceeb",      // Цвет неба по умолчанию (голубой)
+    skyAlpha: 1,              // Прозрачность неба по умолчанию (непрозрачно)
+
     __needsUpdate: false,
   },
 
@@ -107,6 +111,10 @@ const store = {
     this.sky.backgroundColor = "#000000";
     this.sky.environmentMap = null;
     this.sky.environmentUrl = "";
+
+    // === Сброс новых свойств ===
+    this.sky.skyColor = "#87ceeb";
+    this.sky.skyAlpha = 1;
 
     this.sky.__needsUpdate = true;
   },
