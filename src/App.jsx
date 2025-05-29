@@ -3,8 +3,8 @@ import { Canvas } from "@react-three/fiber";
 import Scene from "./Scene";
 import SettingsPanel from "./settings/SettingsPanel";
 import MobileJoystick from "./Joystick";
-import Chat, { ChatProvider } from "./Chat"; // Импортируем ChatProvider
-
+import Chat, { ChatProvider } from "./Chat";
+import Broadcaster from "./settings/Broadcaster"; // ✅ Добавлен импорт Broadcaster
 
 export default function App() {
   const [isStarted, setIsStarted] = useState(false);
@@ -13,7 +13,7 @@ export default function App() {
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
   const handleJoystickMove = (event) => {
-    setJoystickDir(event.direction); // например: "FORWARD", "LEFT", "RIGHT", "BACKWARD"
+    setJoystickDir(event.direction);
   };
 
   const handleJoystickStop = () => {
@@ -36,16 +36,21 @@ export default function App() {
           <ChatProvider>
             <Chat />
           </ChatProvider>
+
           <Canvas
             shadows
             camera={{ position: [0, 1.6, 3], fov: 50, near: 0.1, far: 1000 }}
             gl={{ antialias: true }}
           >
             <Scene joystickDir={joystickDir} />
+            <Broadcaster /> {/* ✅ Добавлен сам компонент */}
           </Canvas>
 
           {isMobile && (
-            <MobileJoystick onMove={handleJoystickMove} onStop={handleJoystickStop} />
+            <MobileJoystick
+              onMove={handleJoystickMove}
+              onStop={handleJoystickStop}
+            />
           )}
         </>
       )}
