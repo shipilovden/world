@@ -4,7 +4,9 @@ import * as EssentialsPlugin from "@tweakpane/plugin-essentials";
 
 import GridSettings from "./GridSettings";
 import GroundSettings from "./GroundSettings";
-import SkySettings from "./SkySettings"; // 👈 добавлено
+import SkySettings from "./SkySettings";
+import FogSettings from "./FogSettings";
+import VoxelSettings from "./VoxelsSettings"; // ✅ Убедись, что именно так называется файл
 
 import store from "./store";
 
@@ -28,8 +30,14 @@ export default function SettingsPanel() {
       const ground = settings.addFolder({ title: "🌍 Ground", expanded: false });
       GroundSettings(ground);
 
-      const sky = settings.addFolder({ title: "🌌 Environment", expanded: false }); // 👈 добавлено
-      SkySettings(sky); // 👈 добавлено
+      const sky = settings.addFolder({ title: "🌌 Sky", expanded: false });
+      SkySettings(sky);
+
+      const fog = settings.addFolder({ title: "🌫️ Fog", expanded: false });
+      FogSettings(fog);
+
+      const voxels = settings.addFolder({ title: "🧊 Voxels", expanded: false });
+      VoxelSettings(voxels);
 
       paneInstance.current = pane;
     }

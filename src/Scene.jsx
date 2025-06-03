@@ -1,11 +1,12 @@
-// Scene.jsx
-import React, { useEffect, useRef } from "react";
+// src/Scene.jsx
+import React, { useEffect, useRef, useReducer } from "react";
 import { useThree } from "@react-three/fiber";
 import { OrbitControls, Sky } from "@react-three/drei";
 import { Physics, usePlane } from "@react-three/cannon";
 import * as THREE from "three";
 import Avatar from "./Avatar";
 import store from "./settings/store";
+import Voxel from "./settings/Voxel";
 
 // ====== КОМПОНЕНТ ПОЛА (GROUND) ======
 function Ground() {
@@ -71,6 +72,7 @@ function Ground() {
 export default function Scene({ joystickDir }) {
   const { camera, scene, gl } = useThree();
 
+  const [, forceUpdate] = useReducer((x) => x + 1, 0); // 🟢 ререндер по флагу
   const smallGrid = useRef();
   const mediumGrid = useRef();
   const largeGrid = useRef();
@@ -89,29 +91,25 @@ export default function Scene({ joystickDir }) {
   useEffect(() => {
     const interval = setInterval(() => {
       const sky = store.sky;
+      const fog = store.fog;
 
-      // 🌫️ Fog
-      if (sky.fogEnabled) {
+      if (fog.fogEnabled) {
         scene.fog =
-          sky.fogMode === "exp" || sky.fogMode === "exp2"
-            ? new THREE.FogExp2(sky.fogColor, sky.fogDensity)
-            : new THREE.Fog(sky.fogColor, sky.fogNear, sky.fogFar);
+          fog.fogMode === "exp" || fog.fogMode === "exp2"
+            ? new THREE.FogExp2(fog.fogColor, fog.fogDensity)
+            : new THREE.Fog(fog.fogColor, fog.fogNear, fog.fogFar);
       } else {
         scene.fog = null;
       }
 
-      // 🎨 Background
       scene.background = new THREE.Color(sky.backgroundColor ?? "#000000");
 
-      // 💡 Environment map
       if (sky.environmentMap) {
         scene.environment = sky.environmentMap;
       }
 
-      // 🔆 Exposure
       gl.toneMappingExposure = sky.exposure ?? 0.5;
 
-      // ☀️ Sun position
       const theta = THREE.MathUtils.degToRad(90 - sky.elevation);
       const phi = THREE.MathUtils.degToRad(sky.azimuth);
       const sun = new THREE.Vector3(
@@ -161,6 +159,39 @@ export default function Scene({ joystickDir }) {
     return () => clearInterval(interval);
   }, []);
 
+  // 🧼 Снятие выделения по Esc и клику вне объектов
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        store.voxels.selectedId = null;
+      }
+    };
+
+    const handleClick = (e) => {
+      if (e.target.tagName === "CANVAS") {
+        store.voxels.selectedId = null;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("pointerdown", handleClick);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("pointerdown", handleClick);
+    };
+  }, []);
+
+  // 🟢 Форс ререндер при флаге
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (store.voxels.__needsUpdate) {
+        store.voxels.__needsUpdate = false;
+        forceUpdate();
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <>
       <ambientLight intensity={0.4} />
@@ -195,7 +226,10 @@ export default function Scene({ joystickDir }) {
         <gridHelper ref={smallGrid} args={[1000, 1000]} position={[0, 0.01, 0]} />
         <gridHelper ref={mediumGrid} args={[1000, 100]} position={[0, 0.02, 0]} />
         <gridHelper ref={largeGrid} args={[1000, 50]} position={[0, 0.03, 0]} />
-        <Avatar castShadow joystickDir={joystickDir} /> {/* 👈 Управление с джойстика */}
+        <Avatar castShadow joystickDir={joystickDir} />
+        {store.voxels.items.map((voxel) => (
+          <Voxel key={voxel.id} voxel={voxel} />
+        ))}
       </Physics>
     </>
   );

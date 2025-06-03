@@ -1,5 +1,3 @@
-// store.js — глобальное состояние через простую подписку
-
 const store = {
   grid: {
     showSmall: true,
@@ -11,6 +9,7 @@ const store = {
     colorSmall: "#888888",
     colorMedium: "#ff0000",
     colorLarge: "#0000ff",
+    __needsUpdate: false,
   },
 
   ground: {
@@ -37,30 +36,6 @@ const store = {
     __needsUpdate: false,
   },
 
-  resetGround() {
-    this.ground.color = "#ffffff";
-    this.ground.opacity = 1;
-    this.ground.roughness = 1;
-    this.ground.metalness = 0;
-    this.ground.aoMapIntensity = 1;
-    this.ground.normalScale = 1;
-    this.ground.displacementScale = 0.1;
-    this.ground.uvOffsetX = 0;
-    this.ground.uvOffsetY = 0;
-    this.ground.texture = null;
-    this.ground.textureUrl = "";
-    this.ground.normalMap = null;
-    this.ground.roughnessMap = null;
-    this.ground.aoMap = null;
-    this.ground.metalnessMap = null;
-    this.ground.heightMap = null;
-    this.ground.textureScaleX = 1;
-    this.ground.textureScaleY = 1;
-    this.ground.flipX = false;
-    this.ground.flipY = false;
-    this.ground.__needsUpdate = true;
-  },
-
   sky: {
     turbidity: 2,
     rayleigh: 1,
@@ -69,46 +44,133 @@ const store = {
     elevation: 33,
     azimuth: 180,
     exposure: 0.5,
+    backgroundColor: "#000000",
+    environmentMap: null,
+    environmentUrl: "",
+    skyAlpha: 1.0,
+    skyColor: "#87ceeb",
+    __needsUpdate: false,
+  },
 
-    // fog
+  fog: {
     fogEnabled: true,
-    fogMode: "linear", // linear | exp | exp2
+    fogMode: "linear",
     fogDensity: 0.005,
     fogNear: 30,
     fogFar: 100,
     fogColor: "#f0f0f0",
-
-    // background
-    backgroundColor: "#000000",
-
-    // environment map
-    environmentMap: null,
-    environmentUrl: "",
-
     __needsUpdate: false,
   },
 
+  voxels: {
+    items: [],
+    selectedId: null,
+    __needsUpdate: false,
+  },
+
+  resetGround() {
+    Object.assign(this.ground, {
+      color: "#ffffff",
+      opacity: 1,
+      roughness: 1,
+      metalness: 0,
+      aoMapIntensity: 1,
+      normalScale: 1,
+      displacementScale: 0.1,
+      uvOffsetX: 0,
+      uvOffsetY: 0,
+      texture: null,
+      textureUrl: "",
+      normalMap: null,
+      roughnessMap: null,
+      aoMap: null,
+      metalnessMap: null,
+      heightMap: null,
+      textureScaleX: 1,
+      textureScaleY: 1,
+      flipX: false,
+      flipY: false,
+      __needsUpdate: true,
+    });
+  },
+
   resetSky() {
-    this.sky.turbidity = 2;
-    this.sky.rayleigh = 1;
-    this.sky.mieCoefficient = 0.005;
-    this.sky.mieDirectionalG = 0.8;
-    this.sky.elevation = 33;
-    this.sky.azimuth = 180;
-    this.sky.exposure = 0.5;
+    Object.assign(this.sky, {
+      turbidity: 2,
+      rayleigh: 1,
+      mieCoefficient: 0.005,
+      mieDirectionalG: 0.8,
+      elevation: 33,
+      azimuth: 180,
+      exposure: 0.5,
+      backgroundColor: "#000000",
+      environmentMap: null,
+      environmentUrl: "",
+      skyAlpha: 1.0,
+      skyColor: "#87ceeb",
+      __needsUpdate: true,
+    });
 
-    this.sky.fogEnabled = true;
-    this.sky.fogMode = "linear";
-    this.sky.fogDensity = 0.005;
-    this.sky.fogNear = 30;
-    this.sky.fogFar = 100;
-    this.sky.fogColor = "#f0f0f0";
+    if (this.sky.environmentMap) {
+      this.sky.environmentMap.dispose();
+      this.sky.environmentMap = null;
+    }
+  },
 
-    this.sky.backgroundColor = "#000000";
-    this.sky.environmentMap = null;
-    this.sky.environmentUrl = "";
+  resetFog() {
+    Object.assign(this.fog, {
+      fogEnabled: true,
+      fogMode: "linear",
+      fogDensity: 0.005,
+      fogNear: 30,
+      fogFar: 100,
+      fogColor: "#f0f0f0",
+      __needsUpdate: true,
+    });
+  },
 
-    this.sky.__needsUpdate = true;
+  addVoxel() {
+    const id = Date.now().toString();
+    console.log("🧱 Воксель добавлен:", id);
+
+    this.voxels.items.push({
+      id,
+      position: { x: 0, y: 0.5, z: 0 },
+      scale: { x: 1, y: 1, z: 1 },
+      color: "#ffffff",
+    });
+
+    this.voxels.selectedId = id;
+    this.voxels.__needsUpdate = true;
+  },
+
+  removeVoxel(id) {
+    this.voxels.items = this.voxels.items.filter((v) => v.id !== id);
+
+    if (this.voxels.selectedId === id) {
+      this.voxels.selectedId = this.voxels.items.length > 0
+        ? this.voxels.items[this.voxels.items.length - 1].id
+        : null;
+    }
+
+    this.voxels.__needsUpdate = true;
+  },
+
+  updateVoxel(id, updates) {
+    const voxel = this.voxels.items.find((v) => v.id === id);
+    if (voxel) {
+      Object.assign(voxel, updates);
+      this.voxels.__needsUpdate = true;
+    }
+  },
+
+  getSelectedVoxelId() {
+    return this.voxels.selectedId;
+  },
+
+  deselectVoxel() {
+    this.voxels.selectedId = null;
+    this.voxels.__needsUpdate = true;
   },
 };
 

@@ -62,46 +62,6 @@ export default function SkySettings(folder) {
     label: "Background",
   }).on("change", () => sky.__needsUpdate = true);
 
-  // === Туман ===
-  folder.addBinding(sky, "fogEnabled", {
-    label: "Enable Fog",
-  }).on("change", () => sky.__needsUpdate = true);
-
-  folder.addBinding(sky, "fogMode", {
-    options: {
-      linear: "linear",
-      exp: "exp",
-      exp2: "exp2",
-    },
-    label: "Fog Mode",
-  }).on("change", () => sky.__needsUpdate = true);
-
-  folder.addBinding(sky, "fogDensity", {
-    min: 0,
-    max: 0.05,
-    step: 0.001,
-    label: "Fog Density",
-  }).on("change", () => sky.__needsUpdate = true);
-
-  folder.addBinding(sky, "fogNear", {
-    min: 0,
-    max: 100,
-    step: 1,
-    label: "Fog Near",
-  }).on("change", () => sky.__needsUpdate = true);
-
-  folder.addBinding(sky, "fogFar", {
-    min: 10,
-    max: 1000,
-    step: 1,
-    label: "Fog Far",
-  }).on("change", () => sky.__needsUpdate = true);
-
-  folder.addBinding(sky, "fogColor", {
-    view: "color",
-    label: "Fog Color",
-  }).on("change", () => sky.__needsUpdate = true);
-
   // === Env Map по URL ===
   folder.addBinding(sky, "environmentUrl", {
     label: "Env Map URL",

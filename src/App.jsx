@@ -5,6 +5,8 @@ import SettingsPanel from "./settings/SettingsPanel";
 import MobileJoystick from "./Joystick";
 import Chat, { ChatProvider } from "./Chat";
 import Broadcaster from "./settings/Broadcaster"; // ✅ Добавлен импорт Broadcaster
+import DownloadAvatar from "./settings/DownloadAvatar";
+import EmotionSelector from "./settings/EmotionSelector";
 
 export default function App() {
   const [isStarted, setIsStarted] = useState(false);
