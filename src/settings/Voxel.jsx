@@ -1,4 +1,3 @@
-// src/settings/Voxel.jsx
 import React, { useRef, useEffect } from "react";
 import { useThree } from "@react-three/fiber";
 import { TransformControls } from "@react-three/drei";
@@ -8,71 +7,73 @@ import store from "./store";
 export default function Voxel({ voxel }) {
   const meshRef = useRef();
   const controlsRef = useRef();
-  const { camera, gl, scene } = useThree();
+  const { camera, gl, controls } = useThree();
   const isSelected = voxel.id === store.voxels.selectedId;
 
-  // Выделение по клику
-  const handleClick = (e) => {
-    e.stopPropagation();
-    store.voxels.selectedId = voxel.id;
-    store.voxels.__needsUpdate = true;
-  };
-
-  // Обновление позиции
   useEffect(() => {
-    if (!controlsRef.current) return;
+    const mesh = meshRef.current;
+    const ctrl = controlsRef.current;
+    if (!mesh || !ctrl) return;
 
-    const callback = () => {
-      const pos = meshRef.current.position;
+    const update = () => {
       store.updateVoxel(voxel.id, {
-        position: { x: pos.x, y: pos.y, z: pos.z },
+        position: { x: mesh.position.x, y: mesh.position.y, z: mesh.position.z },
+        rotation: {
+          x: THREE.MathUtils.radToDeg(mesh.rotation.x),
+          y: THREE.MathUtils.radToDeg(mesh.rotation.y),
+          z: THREE.MathUtils.radToDeg(mesh.rotation.z),
+        },
+        scale: { x: mesh.scale.x, y: mesh.scale.y, z: mesh.scale.z },
       });
     };
 
-    controlsRef.current.addEventListener("objectChange", callback);
+    ctrl.addEventListener("objectChange", update);
+    ctrl.addEventListener("dragging-changed", (e) => {
+      if (controls) controls.enabled = !e.value;
+    });
+
     return () => {
-      controlsRef.current?.removeEventListener("objectChange", callback);
+      ctrl.removeEventListener("objectChange", update);
     };
   }, [voxel.id]);
 
-  // Снятие выделения по Esc или клику вне объекта
   useEffect(() => {
-    const escHandler = (e) => {
-      if (e.key === "Escape") {
-        store.deselectVoxel();
-      } else if (e.key === "Delete" && isSelected) {
-        store.removeVoxel(voxel.id);
-      }
+    const onKey = (e) => {
+      if (e.key === "Escape") store.deselectVoxel();
+      if (e.key === "Delete" && isSelected) store.removeVoxel(voxel.id);
     };
-    const clickAway = (e) => {
-      if (e.target.tagName === "CANVAS") {
-        store.deselectVoxel();
-      }
+    const onClick = (e) => {
+      if (e.target.tagName === "CANVAS") store.deselectVoxel();
     };
 
-    window.addEventListener("keydown", escHandler);
-    window.addEventListener("pointerdown", clickAway);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("pointerdown", onClick);
     return () => {
-      window.removeEventListener("keydown", escHandler);
-      window.removeEventListener("pointerdown", clickAway);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("pointerdown", onClick);
     };
-  }, [voxel.id, isSelected]);
+  }, [isSelected, voxel.id]);
 
   return (
     <>
       <mesh
         ref={meshRef}
-        position={[
-          voxel.position.x,
-          voxel.position.y,
-          voxel.position.z,
+        position={[voxel.position.x, voxel.position.y, voxel.position.z]}
+        rotation={[
+          THREE.MathUtils.degToRad(voxel.rotation.x),
+          THREE.MathUtils.degToRad(voxel.rotation.y),
+          THREE.MathUtils.degToRad(voxel.rotation.z),
         ]}
         scale={[voxel.scale.x, voxel.scale.y, voxel.scale.z]}
-        onClick={handleClick}
+        onClick={(e) => {
+          e.stopPropagation();
+          store.voxels.selectedId = voxel.id;
+          store.voxels.__needsUpdate = true;
+        }}
         castShadow
       >
         <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color={voxel.color} />
+        <meshStandardMaterial color={voxel.color} map={voxel.texture || null} />
       </mesh>
 
       {isSelected && (
