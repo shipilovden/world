@@ -89,45 +89,87 @@ export default function Scene({ joystickDir }) {
   }, [camera]);
 
   useEffect(() => {
+    let lastSkyState = {};
+    let lastFogState = {};
+    
     const interval = setInterval(() => {
       const sky = store.sky;
       const fog = store.fog;
 
-      if (fog.fogEnabled) {
-        scene.fog =
-          fog.fogMode === "exp" || fog.fogMode === "exp2"
-            ? new THREE.FogExp2(fog.fogColor, fog.fogDensity)
-            : new THREE.Fog(fog.fogColor, fog.fogNear, fog.fogFar);
-      } else {
-        scene.fog = null;
+      // ===== ОБРАБОТКА ТУМАНА =====
+      const currentFogState = {
+        fogEnabled: fog.fogEnabled,
+        fogMode: fog.fogMode,
+        fogColor: fog.fogColor,
+        fogDensity: fog.fogDensity,
+        fogNear: fog.fogNear,
+        fogFar: fog.fogFar
+      };
+
+      const fogChanged = JSON.stringify(currentFogState) !== JSON.stringify(lastFogState);
+      
+      if (fogChanged) {
+        if (fog.fogEnabled) {
+          scene.fog =
+            fog.fogMode === "exp" || fog.fogMode === "exp2"
+              ? new THREE.FogExp2(fog.fogColor, fog.fogDensity)
+              : new THREE.Fog(fog.fogColor, fog.fogNear, fog.fogFar);
+        } else {
+          scene.fog = null;
+        }
+        lastFogState = currentFogState;
       }
 
-      scene.background = new THREE.Color(sky.backgroundColor ?? "#000000");
+      // ===== ОБРАБОТКА НЕБА =====
+      const currentSkyState = {
+        backgroundColor: sky.backgroundColor,
+        exposure: sky.exposure,
+        turbidity: sky.turbidity,
+        rayleigh: sky.rayleigh,
+        mieCoefficient: sky.mieCoefficient,
+        mieDirectionalG: sky.mieDirectionalG,
+        elevation: sky.elevation,
+        azimuth: sky.azimuth
+      };
 
-      if (sky.environmentMap) {
-        scene.environment = sky.environmentMap;
-      }
+      const skyChanged = JSON.stringify(currentSkyState) !== JSON.stringify(lastSkyState);
+      
+      if (skyChanged) {
+        // Фон сцены
+        scene.background = new THREE.Color(sky.backgroundColor ?? "#000000");
 
-      gl.toneMappingExposure = sky.exposure ?? 0.5;
+        // Environment map
+        if (sky.environmentMap) {
+          scene.environment = sky.environmentMap;
+        }
 
-      const theta = THREE.MathUtils.degToRad(90 - sky.elevation);
-      const phi = THREE.MathUtils.degToRad(sky.azimuth);
-      const sun = new THREE.Vector3(
-        Math.sin(phi) * Math.cos(theta),
-        Math.sin(theta),
-        Math.cos(phi) * Math.cos(theta)
-      );
+        // Экспозиция
+        gl.toneMappingExposure = sky.exposure ?? 0.5;
 
-      if (skyRef.current?.material?.uniforms) {
-        skyRef.current.material.uniforms["turbidity"].value = sky.turbidity;
-        skyRef.current.material.uniforms["rayleigh"].value = sky.rayleigh;
-        skyRef.current.material.uniforms["mieCoefficient"].value = sky.mieCoefficient;
-        skyRef.current.material.uniforms["mieDirectionalG"].value = sky.mieDirectionalG;
-        skyRef.current.material.uniforms["sunPosition"].value.copy(sun);
-      }
+        // Позиция солнца
+        const theta = THREE.MathUtils.degToRad(90 - sky.elevation);
+        const phi = THREE.MathUtils.degToRad(sky.azimuth);
+        const sun = new THREE.Vector3(
+          Math.sin(phi) * Math.cos(theta),
+          Math.sin(theta),
+          Math.cos(phi) * Math.cos(theta)
+        );
 
-      if (sunLightRef.current) {
-        sunLightRef.current.position.copy(sun.clone().multiplyScalar(100));
+        // Обновление материала неба
+        if (skyRef.current?.material?.uniforms) {
+          skyRef.current.material.uniforms["turbidity"].value = sky.turbidity;
+          skyRef.current.material.uniforms["rayleigh"].value = sky.rayleigh;
+          skyRef.current.material.uniforms["mieCoefficient"].value = sky.mieCoefficient;
+          skyRef.current.material.uniforms["mieDirectionalG"].value = sky.mieDirectionalG;
+          skyRef.current.material.uniforms["sunPosition"].value.copy(sun);
+        }
+
+        // Обновление позиции солнечного света
+        if (sunLightRef.current) {
+          sunLightRef.current.position.copy(sun.clone().multiplyScalar(100));
+        }
+
+        lastSkyState = currentSkyState;
       }
     }, 100);
 
@@ -169,7 +211,7 @@ export default function Scene({ joystickDir }) {
 
     const handleClick = (e) => {
       if (e.target.tagName === "CANVAS") {
-        store.voxels.selectedId = null;
+    store.voxels.selectedId = null;
       }
     };
 
