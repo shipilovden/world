@@ -54,15 +54,4 @@ After starting, open in your browser:
 - **Cannon-es** — physics engine
 - **Vite** — modern project bundling
 
-
-
 ---
-<<<<<<< HEAD
-
-Проект основан на:
-
-- 📦 [threejs-character-controls-example](https://github.com/tamani-coding/
-
----
-=======
->>>>>>> 5bb8b10 (chore: update README, fix sunlight and voxel behavior)
