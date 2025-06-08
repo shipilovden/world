@@ -1,3 +1,4 @@
+// src/settings/store.js
 import * as THREE from "three";
 
 const store = {
@@ -101,6 +102,21 @@ const store = {
     __needsUpdate: false,
   },
 
+  broadcaster: {
+    active: false,
+    remove: false,
+    play: false,
+    pause: false,
+    micEnabled: false,
+    triggerUpload: false,
+    url: "",
+    currentTrack: "",
+    volume: 0.5,
+    distance: 10,
+    mode: "translate",
+    __needsUpdate: false,
+  },
+
   addVoxel() {
     const id = Date.now().toString();
     const uniformScale = 1;
@@ -149,7 +165,6 @@ const store = {
   updateVoxel(id, updates) {
     const voxel = this.voxels.items.find(v => v.id === id);
     if (voxel) {
-      // Глубокое слияние для вложенных объектов
       Object.keys(updates).forEach(key => {
         if (typeof updates[key] === 'object' && updates[key] !== null && !updates[key].isTexture) {
           voxel[key] = { ...voxel[key], ...updates[key] };
@@ -192,7 +207,6 @@ const store = {
       flipY: false,
     };
 
-    // Dispose textures
     if (this.ground.texture) this.ground.texture.dispose();
     if (this.ground.normalMap) this.ground.normalMap.dispose();
     if (this.ground.roughnessMap) this.ground.roughnessMap.dispose();
@@ -236,7 +250,6 @@ const store = {
       clearAll: false,
     };
 
-    // Dispose textures
     if (this.voxel.texture) this.voxel.texture.dispose();
     if (this.voxel.normalMap) this.voxel.normalMap.dispose();
     if (this.voxel.roughnessMap) this.voxel.roughnessMap.dispose();

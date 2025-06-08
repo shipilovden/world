@@ -6,9 +6,8 @@ import GridSettings from "./GridSettings";
 import GroundSettings from "./GroundSettings";
 import SkySettings from "./SkySettings";
 import FogSettings from "./FogSettings";
-import VoxelSettings from "./VoxelsSettings"; // ✅ Убедись, что именно так называется файл
-
-import store from "./store";
+import VoxelSettings from "./VoxelsSettings";
+import BroadcasterSettings from "./BroadcasterSettings";
 
 export default function SettingsPanel() {
   const containerRef = useRef(null);
@@ -17,10 +16,13 @@ export default function SettingsPanel() {
 
   useEffect(() => {
     if (visible && containerRef.current) {
-      if (paneInstance.current) paneInstance.current.dispose();
+      if (paneInstance.current) {
+        paneInstance.current.dispose();
+        paneInstance.current = null;
+      }
 
       const pane = new Pane({ container: containerRef.current });
-      pane.registerPlugin(EssentialsPlugin);
+      pane.registerPlugin(EssentialsPlugin); // 🔥 важно до .addFolder()
 
       const settings = pane.addFolder({ title: "⚙️ Settings", expanded: true });
 
@@ -39,6 +41,12 @@ export default function SettingsPanel() {
       const voxels = settings.addFolder({ title: "🧊 Voxels", expanded: false });
       VoxelSettings(voxels);
 
+      const broadcaster = settings.addFolder({ title: "📢 Broadcaster", expanded: false });
+
+      console.log("broadcaster =", broadcaster); // ✅ отладка
+      console.log("typeof broadcaster.addBinding =", typeof broadcaster.addBinding); // ✅ отладка
+
+      BroadcasterSettings(broadcaster); // 🔥 тут проблема, если broadcaster не Folder
       paneInstance.current = pane;
     }
 

@@ -1,7 +1,6 @@
-// src/Scene.jsx
-import React, { useEffect, useRef, useReducer } from "react";
-import { useThree } from "@react-three/fiber";
-import { OrbitControls, Sky } from "@react-three/drei";
+import React, { useEffect, useRef, useReducer, useState } from "react";
+import { useThree, useFrame } from "@react-three/fiber";
+import { OrbitControls, Sky, TransformControls, Text } from "@react-three/drei";
 import { Physics, usePlane } from "@react-three/cannon";
 import * as THREE from "three";
 import Avatar from "./Avatar";
@@ -68,11 +67,252 @@ function Ground() {
   );
 }
 
+// ====== 📢 БРОДКАСТЕР ======
+function Broadcaster() {
+  const ref = useRef();
+  const transformRef = useRef();
+  const audioRef = useRef();
+  const micStreamRef = useRef(null);
+  const { camera } = useThree();
+  const [visible, setVisible] = useState(false);
+  const [trackName, setTrackName] = useState("");
+  const broadcaster = store.broadcaster;
+
+  // Исправляем зависимости useEffect
+  useEffect(() => {
+    if (broadcaster.remove) {
+      setVisible(false);
+      broadcaster.remove = false;
+
+      if (audioRef.current?.isPlaying) {
+        audioRef.current.stop();
+      }
+      if (micStreamRef.current) {
+        micStreamRef.current.getTracks().forEach((t) => t.stop());
+        micStreamRef.current = null;
+      }
+    }
+
+    if (broadcaster.active) {
+      setVisible(true);
+      broadcaster.active = false;
+    }
+  }, [broadcaster.active, broadcaster.remove]);
+
+  // Отдельный useEffect для обработки действий
+  useEffect(() => {
+    if (!visible) return;
+
+    // Обработка воспроизведения аудио
+    if (broadcaster.play && broadcaster.url) {
+      const listener = getOrCreateListener();
+      const audio = new THREE.PositionalAudio(listener);
+
+
+
+
+
+
+
+
+
+
+      
+      // Останавливаем предыдущий трек если есть
+      if (audioRef.current?.isPlaying) {
+        audioRef.current.stop();
+      }
+      
+      new THREE.AudioLoader().load(
+        broadcaster.url, 
+        (buffer) => {
+          audio.setBuffer(buffer);
+          audio.setRefDistance(broadcaster.distance);
+          audio.setVolume(broadcaster.volume);
+          audio.setLoop(true);
+          audio.play();
+          
+          if (ref.current) {
+            ref.current.add(audio);
+          }
+          audioRef.current = audio;
+          broadcaster.play = false;
+        },
+        undefined,
+        (error) => {
+          console.error('Ошибка загрузки аудио:', error);
+          broadcaster.play = false;
+        }
+      );
+    }
+
+    // Обработка паузы
+    if (broadcaster.pause && audioRef.current?.isPlaying) {
+      audioRef.current.pause();
+      broadcaster.pause = false;
+    }
+
+    // Обработка микрофона
+    if (broadcaster.micEnabled && !micStreamRef.current) {
+
+
+
+
+
+
+
+
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then((stream) => {
+          const listener = getOrCreateListener();
+          const audioContext = listener.context;
+          
+          // Создаем источник из микрофона
+          const micSource = audioContext.createMediaStreamSource(stream);
+          
+          // Создаем позиционный аудио узел
+          const gainNode = audioContext.createGain();
+          gainNode.gain.value = broadcaster.volume;
+          
+          micSource.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          micStreamRef.current = stream;
+          console.log('Микрофон подключен');
+        })
+        .catch((error) => {
+          console.error('Ошибка доступа к микрофону:', error);
+          broadcaster.micEnabled = false;
+        });
+    }
+
+    // Отключение микрофона
+    if (!broadcaster.micEnabled && micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach((track) => track.stop());
+      micStreamRef.current = null;
+      console.log('Микрофон отключен');
+    }
+
+    // Обработка загрузки файла
+    if (broadcaster.triggerUpload) {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "audio/*";
+      input.style.display = "none";
+      
+      input.onchange = (e) => {
+
+        const file = e.target.files?.[0];
+        if (!file) return;
+        
+        // Освобождаем предыдущий URL если есть
+        if (broadcaster.url && broadcaster.url.startsWith('blob:')) {
+          URL.revokeObjectURL(broadcaster.url);
+        }
+        
+        const url = URL.createObjectURL(file);
+        broadcaster.url = url;
+        broadcaster.currentTrack = file.name;
+        setTrackName(file.name);
+        broadcaster.play = true;
+        
+        console.log('Файл загружен:', file.name);
+      };
+      
+      document.body.appendChild(input);
+      input.click();
+      document.body.removeChild(input);
+      
+      broadcaster.triggerUpload = false;
+    }
+  }, [
+    visible,
+    broadcaster.play,
+    broadcaster.pause,
+    broadcaster.micEnabled,
+    broadcaster.triggerUpload,
+    broadcaster.url,
+    broadcaster.volume,
+    broadcaster.distance
+  ]);
+
+  useFrame(() => {
+
+
+
+
+    if (ref.current) {
+      ref.current.lookAt(camera.position);
+    }
+    
+    if (transformRef.current) {
+      transformRef.current.setMode(broadcaster.mode);
+    }
+    
+    if (audioRef.current) {
+      audioRef.current.setVolume(broadcaster.volume);
+      audioRef.current.setRefDistance(broadcaster.distance);
+    }
+  });
+
+  const getOrCreateListener = () => {
+    let listener = camera.children.find((c) => c instanceof THREE.AudioListener);
+    if (!listener) {
+      listener = new THREE.AudioListener();
+      camera.add(listener);
+    }
+    return listener;
+  };
+
+  if (!visible) return null;
+
+  return (
+    <TransformControls ref={transformRef} object={ref.current}>
+      <group ref={ref} position={[0, 1.5, 0]}>
+        {(broadcaster.micEnabled || audioRef.current?.isPlaying) && (
+          <>
+
+            <Text 
+              fontSize={0.4} 
+              position={[0, 0.6, 0]} 
+              color="red" 
+              anchorX="center" 
+              anchorY="middle"
+            >
+              ON AIR
+            </Text>
+            <mesh>
+              <ringGeometry args={[0.6, 0.7, 32]} />
+              <meshBasicMaterial color="red" transparent opacity={0.5} />
+            </mesh>
+          </>
+        )}
+
+        <Text fontSize={1} anchorX="center" anchorY="middle">
+          📢
+        </Text>
+        {trackName && (
+
+          <Text 
+            fontSize={0.25} 
+            position={[0, -0.7, 0]} 
+            color="white" 
+            anchorX="center" 
+            anchorY="middle"
+          >
+            {trackName}
+          </Text>
+        )}
+      </group>
+    </TransformControls>
+  );
+}
+
 // ====== ОСНОВНАЯ СЦЕНА ======
 export default function Scene({ joystickDir }) {
   const { camera, scene, gl } = useThree();
 
-  const [, forceUpdate] = useReducer((x) => x + 1, 0); // 🟢 ререндер по флагу
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
   const smallGrid = useRef();
   const mediumGrid = useRef();
   const largeGrid = useRef();
@@ -91,62 +331,29 @@ export default function Scene({ joystickDir }) {
   useEffect(() => {
     let lastSkyState = {};
     let lastFogState = {};
-    
     const interval = setInterval(() => {
       const sky = store.sky;
       const fog = store.fog;
-
-      // ===== ОБРАБОТКА ТУМАНА =====
-      const currentFogState = {
-        fogEnabled: fog.fogEnabled,
-        fogMode: fog.fogMode,
-        fogColor: fog.fogColor,
-        fogDensity: fog.fogDensity,
-        fogNear: fog.fogNear,
-        fogFar: fog.fogFar
-      };
+      const currentFogState = { ...fog };
+      const currentSkyState = { ...sky };
 
       const fogChanged = JSON.stringify(currentFogState) !== JSON.stringify(lastFogState);
-      
       if (fogChanged) {
         if (fog.fogEnabled) {
-          scene.fog =
-            fog.fogMode === "exp" || fog.fogMode === "exp2"
-              ? new THREE.FogExp2(fog.fogColor, fog.fogDensity)
-              : new THREE.Fog(fog.fogColor, fog.fogNear, fog.fogFar);
+          scene.fog = fog.fogMode === "exp" || fog.fogMode === "exp2"
+            ? new THREE.FogExp2(fog.fogColor, fog.fogDensity)
+            : new THREE.Fog(fog.fogColor, fog.fogNear, fog.fogFar);
         } else {
           scene.fog = null;
         }
         lastFogState = currentFogState;
       }
 
-      // ===== ОБРАБОТКА НЕБА =====
-      const currentSkyState = {
-        backgroundColor: sky.backgroundColor,
-        exposure: sky.exposure,
-        turbidity: sky.turbidity,
-        rayleigh: sky.rayleigh,
-        mieCoefficient: sky.mieCoefficient,
-        mieDirectionalG: sky.mieDirectionalG,
-        elevation: sky.elevation,
-        azimuth: sky.azimuth
-      };
-
       const skyChanged = JSON.stringify(currentSkyState) !== JSON.stringify(lastSkyState);
-      
       if (skyChanged) {
-        // Фон сцены
         scene.background = new THREE.Color(sky.backgroundColor ?? "#000000");
-
-        // Environment map
-        if (sky.environmentMap) {
-          scene.environment = sky.environmentMap;
-        }
-
-        // Экспозиция
+        if (sky.environmentMap) scene.environment = sky.environmentMap;
         gl.toneMappingExposure = sky.exposure ?? 0.5;
-
-        // Позиция солнца
         const theta = THREE.MathUtils.degToRad(90 - sky.elevation);
         const phi = THREE.MathUtils.degToRad(sky.azimuth);
         const sun = new THREE.Vector3(
@@ -154,8 +361,6 @@ export default function Scene({ joystickDir }) {
           Math.sin(theta),
           Math.cos(phi) * Math.cos(theta)
         );
-
-        // Обновление материала неба
         if (skyRef.current?.material?.uniforms) {
           skyRef.current.material.uniforms["turbidity"].value = sky.turbidity;
           skyRef.current.material.uniforms["rayleigh"].value = sky.rayleigh;
@@ -163,12 +368,9 @@ export default function Scene({ joystickDir }) {
           skyRef.current.material.uniforms["mieDirectionalG"].value = sky.mieDirectionalG;
           skyRef.current.material.uniforms["sunPosition"].value.copy(sun);
         }
-
-        // Обновление позиции солнечного света
         if (sunLightRef.current) {
           sunLightRef.current.position.copy(sun.clone().multiplyScalar(100));
         }
-
         lastSkyState = currentSkyState;
       }
     }, 100);
@@ -177,9 +379,8 @@ export default function Scene({ joystickDir }) {
   }, [scene, gl]);
 
   useEffect(() => {
-    const update = () => {
+    const interval = setInterval(() => {
       const g = store.grid;
-
       const updateGrid = (ref, visible, opacity, color) => {
         if (ref.current?.material) {
           ref.current.visible = visible;
@@ -191,30 +392,20 @@ export default function Scene({ joystickDir }) {
           ref.current.material.needsUpdate = true;
         }
       };
-
       updateGrid(smallGrid, g.showSmall, g.opacitySmall, g.colorSmall);
       updateGrid(mediumGrid, g.showMedium, g.opacityMedium, g.colorMedium);
       updateGrid(largeGrid, g.showLarge, g.opacityLarge, g.colorLarge);
-    };
-
-    const interval = setInterval(update, 100);
+    }, 100);
     return () => clearInterval(interval);
   }, []);
 
-  // 🧼 Снятие выделения по Esc и клику вне объектов
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        store.voxels.selectedId = null;
-      }
+      if (e.key === "Escape") store.voxels.selectedId = null;
     };
-
     const handleClick = (e) => {
-      if (e.target.tagName === "CANVAS") {
-    store.voxels.selectedId = null;
-      }
+      if (e.target.tagName === "CANVAS") store.voxels.selectedId = null;
     };
-
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("pointerdown", handleClick);
     return () => {
@@ -223,11 +414,20 @@ export default function Scene({ joystickDir }) {
     };
   }, []);
 
-  // 🟢 Форс ререндер при флаге
   useEffect(() => {
     const interval = setInterval(() => {
       if (store.voxels.__needsUpdate) {
         store.voxels.__needsUpdate = false;
+        forceUpdate();
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (store.broadcaster.__needsUpdate) {
+        store.broadcaster.__needsUpdate = false;
         forceUpdate();
       }
     }, 100);
@@ -272,6 +472,7 @@ export default function Scene({ joystickDir }) {
         {store.voxels.items.map((voxel) => (
           <Voxel key={voxel.id} voxel={voxel} />
         ))}
+        <Broadcaster />
       </Physics>
     </>
   );

@@ -4,7 +4,7 @@ import Scene from "./Scene";
 import SettingsPanel from "./settings/SettingsPanel";
 import MobileJoystick from "./Joystick";
 import Chat, { ChatProvider } from "./Chat";
-import Broadcaster from "./settings/Broadcaster";
+import Broadcaster from "./settings/BroadcasterSettings";
 import * as Tweakpane from "tweakpane";
 import { splashSettings } from "./shaders/SplashShader";
 
