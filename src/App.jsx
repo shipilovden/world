@@ -55,8 +55,12 @@ export default function App() {
       const creator = pane.addFolder({ title: "🧠 Creator" });
       creator.addButton({ title: "👤 Denis Shipilov" }).on("click", () => {});
       creator.addButton({ title: "🌐 Website" }).on("click", () => {});
-      creator.addButton({ title: "📘 VK" }).on("click", () => {});
-      creator.addButton({ title: "🐦 Twitter" }).on("click", () => {});
+      creator.addButton({ title: "📘 VK" }).on("click", () => {
+        window.open("https://vk.com/denshipilovart", "_blank");
+      });
+      creator.addButton({ title: "🐦 Twitter" }).on("click", () => {
+        window.open("https://x.com/denshipilovart", "_blank");
+      });
 
       const projects = creator.addFolder({ title: "🧱 Projects by Denis Shipilov" });
       projects.addButton({ title: "🎬 Film Project" }).on("click", () => {});
