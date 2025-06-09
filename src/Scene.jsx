@@ -6,6 +6,7 @@ import * as THREE from "three";
 import Avatar from "./Avatar";
 import store from "./settings/store";
 import Voxel from "./settings/Voxel";
+import { Grid } from "@react-three/drei";
 
 // ====== КОМПОНЕНТ ПОЛА (GROUND) ======
 function Ground() {
@@ -78,7 +79,6 @@ function Broadcaster() {
   const [trackName, setTrackName] = useState("");
   const broadcaster = store.broadcaster;
 
-  // Исправляем зависимости useEffect
   useEffect(() => {
     if (broadcaster.remove) {
       setVisible(false);
@@ -99,26 +99,13 @@ function Broadcaster() {
     }
   }, [broadcaster.active, broadcaster.remove]);
 
-  // Отдельный useEffect для обработки действий
   useEffect(() => {
     if (!visible) return;
 
-    // Обработка воспроизведения аудио
     if (broadcaster.play && broadcaster.url) {
       const listener = getOrCreateListener();
       const audio = new THREE.PositionalAudio(listener);
 
-
-
-
-
-
-
-
-
-
-      
-      // Останавливаем предыдущий трек если есть
       if (audioRef.current?.isPlaying) {
         audioRef.current.stop();
       }
@@ -146,31 +133,18 @@ function Broadcaster() {
       );
     }
 
-    // Обработка паузы
     if (broadcaster.pause && audioRef.current?.isPlaying) {
       audioRef.current.pause();
       broadcaster.pause = false;
     }
 
-    // Обработка микрофона
     if (broadcaster.micEnabled && !micStreamRef.current) {
-
-
-
-
-
-
-
-
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then((stream) => {
           const listener = getOrCreateListener();
           const audioContext = listener.context;
           
-          // Создаем источник из микрофона
           const micSource = audioContext.createMediaStreamSource(stream);
-          
-          // Создаем позиционный аудио узел
           const gainNode = audioContext.createGain();
           gainNode.gain.value = broadcaster.volume;
           
@@ -186,14 +160,12 @@ function Broadcaster() {
         });
     }
 
-    // Отключение микрофона
     if (!broadcaster.micEnabled && micStreamRef.current) {
       micStreamRef.current.getTracks().forEach((track) => track.stop());
       micStreamRef.current = null;
       console.log('Микрофон отключен');
     }
 
-    // Обработка загрузки файла
     if (broadcaster.triggerUpload) {
       const input = document.createElement("input");
       input.type = "file";
@@ -201,11 +173,9 @@ function Broadcaster() {
       input.style.display = "none";
       
       input.onchange = (e) => {
-
         const file = e.target.files?.[0];
         if (!file) return;
         
-        // Освобождаем предыдущий URL если есть
         if (broadcaster.url && broadcaster.url.startsWith('blob:')) {
           URL.revokeObjectURL(broadcaster.url);
         }
@@ -237,10 +207,6 @@ function Broadcaster() {
   ]);
 
   useFrame(() => {
-
-
-
-
     if (ref.current) {
       ref.current.lookAt(camera.position);
     }
@@ -271,7 +237,6 @@ function Broadcaster() {
       <group ref={ref} position={[0, 1.5, 0]}>
         {(broadcaster.micEnabled || audioRef.current?.isPlaying) && (
           <>
-
             <Text 
               fontSize={0.4} 
               position={[0, 0.6, 0]} 
@@ -292,7 +257,6 @@ function Broadcaster() {
           📢
         </Text>
         {trackName && (
-
           <Text 
             fontSize={0.25} 
             position={[0, -0.7, 0]} 
@@ -313,9 +277,6 @@ export default function Scene({ joystickDir }) {
   const { camera, scene, gl } = useThree();
 
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
-  const smallGrid = useRef();
-  const mediumGrid = useRef();
-  const largeGrid = useRef();
   const skyRef = useRef();
   const sunLightRef = useRef();
 
@@ -379,23 +340,23 @@ export default function Scene({ joystickDir }) {
   }, [scene, gl]);
 
   useEffect(() => {
+    let lastGridState = {};
+
     const interval = setInterval(() => {
       const g = store.grid;
-      const updateGrid = (ref, visible, opacity, color) => {
-        if (ref.current?.material) {
-          ref.current.visible = visible;
-          ref.current.material.opacity = opacity;
-          ref.current.material.color.set(color);
-          ref.current.material.transparent = true;
-          ref.current.material.depthWrite = false;
-          ref.current.material.fog = true;
-          ref.current.material.needsUpdate = true;
-        }
-      };
-      updateGrid(smallGrid, g.showSmall, g.opacitySmall, g.colorSmall);
-      updateGrid(mediumGrid, g.showMedium, g.opacityMedium, g.colorMedium);
-      updateGrid(largeGrid, g.showLarge, g.opacityLarge, g.colorLarge);
+      const state = JSON.stringify(g);
+
+      if (state !== lastGridState) {
+        lastGridState = state;
+        forceUpdate();
+      }
+
+      if (g.__needsUpdate) {
+        g.__needsUpdate = false;
+        forceUpdate();
+      }
     }, 100);
+
     return () => clearInterval(interval);
   }, []);
 
@@ -465,9 +426,23 @@ export default function Scene({ joystickDir }) {
       />
       <Physics gravity={[0, -9.81, 0]}>
         <Ground />
-        <gridHelper ref={smallGrid} args={[1000, 1000]} position={[0, 0.01, 0]} />
-        <gridHelper ref={mediumGrid} args={[1000, 100]} position={[0, 0.02, 0]} />
-        <gridHelper ref={largeGrid} args={[1000, 50]} position={[0, 0.03, 0]} />
+        {store.grid.enabled && (
+          <Grid
+            args={[1000, 1000]}
+            position={[0, 0.01, 0]}
+            cellSize={store.grid.cellSize}
+            cellThickness={store.grid.cellThickness}
+            cellColor={store.grid.cellColor}
+            sectionSize={store.grid.sectionSize}
+            sectionThickness={store.grid.sectionThickness}
+            sectionColor={store.grid.sectionColor}
+            fadeDistance={store.grid.fadeDistance}
+            fadeStrength={store.grid.fadeStrength}
+            fadeFrom={store.grid.fadeFrom}
+            infiniteGrid={store.grid.infiniteGrid}
+            followCamera={store.grid.followCamera}
+          />
+        )}
         <Avatar castShadow joystickDir={joystickDir} />
         {store.voxels.items.map((voxel) => (
           <Voxel key={voxel.id} voxel={voxel} />

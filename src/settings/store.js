@@ -3,6 +3,7 @@ import * as THREE from "three";
 
 const store = {
   grid: {
+    // Устаревшие параметры (если используешь gridHelper — можешь удалить)
     showSmall: true,
     showMedium: true,
     showLarge: true,
@@ -12,6 +13,21 @@ const store = {
     colorSmall: "#888888",
     colorMedium: "#ff0000",
     colorLarge: "#0000ff",
+
+    // Shader-based Grid (drei)
+    enabled: true,                     // ✅ Показывать/скрывать сетку
+    cellSize: 0.5,
+    cellThickness: 0.5,
+    cellColor: "#6f6f6f",
+    sectionSize: 1,
+    sectionThickness: 1,
+    sectionColor: "#2080ff",
+    fadeDistance: 50,
+    fadeStrength: 1,
+    fadeFrom: 1,
+    infiniteGrid: true,
+    followCamera: false,
+
     __needsUpdate: false,
   },
 
@@ -114,6 +130,8 @@ const store = {
     volume: 0.5,
     distance: 10,
     mode: "translate",
+    color: "#ff0000",
+    size: 1,
     __needsUpdate: false,
   },
 
@@ -163,10 +181,14 @@ const store = {
   },
 
   updateVoxel(id, updates) {
-    const voxel = this.voxels.items.find(v => v.id === id);
+    const voxel = this.voxels.items.find((v) => v.id === id);
     if (voxel) {
-      Object.keys(updates).forEach(key => {
-        if (typeof updates[key] === 'object' && updates[key] !== null && !updates[key].isTexture) {
+      Object.keys(updates).forEach((key) => {
+        if (
+          typeof updates[key] === "object" &&
+          updates[key] !== null &&
+          !updates[key].isTexture
+        ) {
           voxel[key] = { ...voxel[key], ...updates[key] };
         } else {
           voxel[key] = updates[key];

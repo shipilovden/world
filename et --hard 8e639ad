@@ -1,0 +1,21 @@
+[33m30eaf9b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Refactor Grid system: enabled toggle, infinite mode, and full Tweakpane support
+[33m04be2f5[m ♻️ Replace Broadcaster.jsx with BroadcasterSettings.jsx and update scene logic
+[33m2cd8eb5[m 🔗 Added Twitter and VK links to Creator panel in splash Tweakpane
+[33m08e1e41[m 🎨 Added SplashShader.js and enhanced Start panel with Creator and Projects sections
+[33mb22a8ba[m docs: update README
+[33m7149a96[m chore: update README, fix sunlight and voxel behavior
+[33m8e639ad[m 🚧 Improved voxel settings and real-time parameter updates
+[33m2ea1446[m Update README.md
+[33mb7f2d5e[m Add voxel editing system and update README with project structure and setup instructions
+[33ma159cd4[m[33m ([m[1;33mtag: [m[1;33mv1.1.0[m[33m)[m Add voxel system, tweakpane controls, animations, and scene improvements
+[33m5abbb52[m Add Broadcaster panel and integrate it into App.jsx
+[33m3c8b76d[m Added internal chat and updated App.jsx for joystick integration
+[33m1c8e58d[m[33m ([m[1;33mtag: [m[1;33mv1.0.0[m[33m)[m Добавлен джойстик для мобильных и поддержка управления аватаром
+[33m08fff2a[m Добавлены настройки неба, света и тумана
+[33mf40c67e[m Обновлён README.md
+[33m1a0564e[m Обновлён README.md
+[33m9fc09cb[m Обновлён README.md
+[33m20590e4[m Обновлён README.md
+[33m11495eb[m Добавлена лицензия с ограничением на продажу и требованием указания автора
+[33m2fbe15a[m Добавлен README.md и скриншоты
+[33mdf59fad[m Initial commit

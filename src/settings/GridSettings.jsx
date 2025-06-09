@@ -1,38 +1,100 @@
 import store from "./store";
 
-export default function GridSettings(pane) {
+export default function GridSettings(folder) {
   const grid = store.grid;
 
-  const small = pane.addFolder({ title: "Small Grid" });
-  small.addBinding(grid, "showSmall", { label: "Visible" }).on("change", () => {
-    store.grid.showSmall = grid.showSmall;
-  });
-  small.addBinding(grid, "opacitySmall", { min: 0, max: 1 }).on("change", () => {
-    store.grid.opacitySmall = grid.opacitySmall;
-  });
-  small.addBinding(grid, "colorSmall").on("change", () => {
-    store.grid.colorSmall = grid.colorSmall;
+  folder.addBinding(grid, "enabled", {
+    label: "✅ Show Grid",
+  }).on("change", () => {
+    grid.__needsUpdate = true;
   });
 
-  const medium = pane.addFolder({ title: "Medium Grid" });
-  medium.addBinding(grid, "showMedium", { label: "Visible" }).on("change", () => {
-    store.grid.showMedium = grid.showMedium;
-  });
-  medium.addBinding(grid, "opacityMedium", { min: 0, max: 1 }).on("change", () => {
-    store.grid.opacityMedium = grid.opacityMedium;
-  });
-  medium.addBinding(grid, "colorMedium").on("change", () => {
-    store.grid.colorMedium = grid.colorMedium;
+  folder.addBinding(grid, "infiniteGrid", {
+    label: "♾ Infinite",
+  }).on("change", () => {
+    grid.__needsUpdate = true;
   });
 
-  const large = pane.addFolder({ title: "Large Grid" });
-  large.addBinding(grid, "showLarge", { label: "Visible" }).on("change", () => {
-    store.grid.showLarge = grid.showLarge;
+  folder.addBinding(grid, "followCamera", {
+    label: "🎥 Follow Camera",
+  }).on("change", () => {
+    grid.__needsUpdate = true;
   });
-  large.addBinding(grid, "opacityLarge", { min: 0, max: 1 }).on("change", () => {
-    store.grid.opacityLarge = grid.opacityLarge;
+
+  folder.addBinding(grid, "cellSize", {
+    label: "▫ Cell Size",
+    min: 0.1,
+    max: 10,
+    step: 0.1,
+  }).on("change", () => {
+    grid.__needsUpdate = true;
   });
-  large.addBinding(grid, "colorLarge").on("change", () => {
-    store.grid.colorLarge = grid.colorLarge;
+
+  folder.addBinding(grid, "cellThickness", {
+    label: "▫ Cell Thickness",
+    min: 0.01,
+    max: 5,
+    step: 0.01,
+  }).on("change", () => {
+    grid.__needsUpdate = true;
+  });
+
+  folder.addBinding(grid, "cellColor", {
+    label: "▫ Cell Color",
+    view: "color",
+  }).on("change", () => {
+    grid.__needsUpdate = true;
+  });
+
+  folder.addBinding(grid, "sectionSize", {
+    label: "▣ Section Size",
+    min: 0.1,
+    max: 10,
+    step: 0.1,
+  }).on("change", () => {
+    grid.__needsUpdate = true;
+  });
+
+  folder.addBinding(grid, "sectionThickness", {
+    label: "▣ Section Thickness",
+    min: 0.01,
+    max: 5,
+    step: 0.01,
+  }).on("change", () => {
+    grid.__needsUpdate = true;
+  });
+
+  folder.addBinding(grid, "sectionColor", {
+    label: "▣ Section Color",
+    view: "color",
+  }).on("change", () => {
+    grid.__needsUpdate = true;
+  });
+
+  folder.addBinding(grid, "fadeDistance", {
+    label: "🌫 Fade Distance",
+    min: 0,
+    max: 100,
+    step: 1,
+  }).on("change", () => {
+    grid.__needsUpdate = true;
+  });
+
+  folder.addBinding(grid, "fadeStrength", {
+    label: "🌫 Fade Strength",
+    min: 0,
+    max: 1,
+    step: 0.01,
+  }).on("change", () => {
+    grid.__needsUpdate = true;
+  });
+
+  folder.addBinding(grid, "fadeFrom", {
+    label: "🎯 Fade Origin",
+    min: 0,
+    max: 1,
+    step: 0.01,
+  }).on("change", () => {
+    grid.__needsUpdate = true;
   });
 }
