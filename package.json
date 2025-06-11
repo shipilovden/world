@@ -17,6 +17,7 @@
     "@tweakpane/plugin-essentials": "^0.2.1",
     "drei": "^2.2.21",
     "marked": "^15.0.12",
+    "postprocessing": "^6.37.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-joystick-component": "^6.2.1",

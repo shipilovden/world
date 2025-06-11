@@ -2,8 +2,8 @@
 import * as THREE from "three";
 
 const store = {
+  // === GRID ===
   grid: {
-    // Устаревшие параметры (если используешь gridHelper — можешь удалить)
     showSmall: true,
     showMedium: true,
     showLarge: true,
@@ -14,8 +14,7 @@ const store = {
     colorMedium: "#ff0000",
     colorLarge: "#0000ff",
 
-    // Shader-based Grid (drei)
-    enabled: true,                     // ✅ Показывать/скрывать сетку
+    enabled: true,
     cellSize: 0.5,
     cellThickness: 0.5,
     cellColor: "#6f6f6f",
@@ -25,12 +24,13 @@ const store = {
     fadeDistance: 50,
     fadeStrength: 1,
     fadeFrom: 1,
-    infiniteGrid: true,
+    infiniteGrid: false,
     followCamera: false,
 
     __needsUpdate: false,
   },
 
+  // === GROUND ===
   ground: {
     color: "#ffffff",
     opacity: 1,
@@ -55,6 +55,7 @@ const store = {
     __needsUpdate: false,
   },
 
+  // === SKY ===
   sky: {
     turbidity: 2,
     rayleigh: 1,
@@ -71,6 +72,7 @@ const store = {
     __needsUpdate: false,
   },
 
+  // === FOG ===
   fog: {
     fogEnabled: true,
     fogMode: "linear",
@@ -81,6 +83,22 @@ const store = {
     __needsUpdate: false,
   },
 
+  // === SHADOWS ===
+shadow: {
+  enabled: true,               // чекбокс Enable Shadows
+  type: "contact",             // 'contact' | 'ssao'
+  opacity: 0.75,               // влияет на яркость тени и DirectionalLight.intensity
+  blur: 2.5,                   // мягкость тени (ContactShadows + light.shadow.radius)
+  distance: 30,                // область охвата DirectionalLight.shadow.camera
+  color: "#000000",            // цвет тени (для всех источников)
+  ssaoSamples: 32,             // качество SSAO
+  ssaoRadius: 0.6,             // радиус размытия SSAO
+  ssaoIntensity: 1.5,          // сила SSAO затемнения
+  __needsUpdate: false,        // внутренний флаг для перерисовки
+},
+
+
+  // === VOXELS ===
   voxels: {
     items: [],
     selectedId: null,
@@ -118,6 +136,7 @@ const store = {
     __needsUpdate: false,
   },
 
+  // === BROADCASTER ===
   broadcaster: {
     active: false,
     remove: false,
@@ -135,6 +154,7 @@ const store = {
     __needsUpdate: false,
   },
 
+  // === VOXEL ACTIONS ===
   addVoxel() {
     const id = Date.now().toString();
     const uniformScale = 1;

@@ -1,3 +1,4 @@
+// src/settings/SettingsPanel.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { Pane } from "tweakpane";
 import * as EssentialsPlugin from "@tweakpane/plugin-essentials";
@@ -8,6 +9,7 @@ import SkySettings from "./SkySettings";
 import FogSettings from "./FogSettings";
 import VoxelSettings from "./VoxelsSettings";
 import BroadcasterSettings from "./BroadcasterSettings";
+import ShadowsSettings from "./ShadowsSettings"; // ✅ ДОБАВЛЕНО
 
 export default function SettingsPanel() {
   const containerRef = useRef(null);
@@ -38,15 +40,15 @@ export default function SettingsPanel() {
       const fog = settings.addFolder({ title: "🌫️ Fog", expanded: false });
       FogSettings(fog);
 
+      const shadows = settings.addFolder({ title: "🌓 Shadows", expanded: false }); // ✅ ДОБАВЛЕНО
+      ShadowsSettings(shadows); // ✅ ДОБАВЛЕНО
+
       const voxels = settings.addFolder({ title: "🧊 Voxels", expanded: false });
       VoxelSettings(voxels);
 
       const broadcaster = settings.addFolder({ title: "📢 Broadcaster", expanded: false });
+      BroadcasterSettings(broadcaster);
 
-      console.log("broadcaster =", broadcaster); // ✅ отладка
-      console.log("typeof broadcaster.addBinding =", typeof broadcaster.addBinding); // ✅ отладка
-
-      BroadcasterSettings(broadcaster); // 🔥 тут проблема, если broadcaster не Folder
       paneInstance.current = pane;
     }
 
